@@ -17,7 +17,7 @@ export default function Profile() {
         />
         <div className="mt-4 md:mt-0 md:ml-6 text-center md:text-left">
           <h1 className="text-2xl font-bold">tsuji1</h1>
-          <p className="text-lg">I'm student of University of Electro-Communications</p>
+          <p className="text-lg">I'm student of University of Electro-Communications.</p>
           <p className="text-base mt-2">ネットワークなどITインフラやCTFがスキです．MMAに所属．</p>
         </div>
       </div>

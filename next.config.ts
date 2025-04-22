@@ -9,10 +9,4 @@ const nextConfig: NextConfig = {
     domains: ["github.com"],
   },
 };
-if (process.env.NODE_ENV === 'development') {
-  setupDevPlatform().then(() => {
-  // config の return
-});
-
-}
 export default nextConfig;

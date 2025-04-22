@@ -1,0 +1,4 @@
+name = "tsuji1-blog"
+compatibility_date = "2025-04-22"
+compatibility_flags = ["nodejs_compat"]  # Node API が欲しい場合
+pages_build_output_dir = ".vercel/output/static"

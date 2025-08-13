@@ -1,4 +1,16 @@
 name = "tsuji1-blog"
-compatibility_date = "2025-04-22"
+compatibility_date = "2025-08-12"
 compatibility_flags = ["nodejs_compat"]  # Node API が欲しい場合
 pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+JWT_ISSUER="tsuji1-blog"
+
+[[kv_namespaces]]
+binding = "BLOG_POSTS_KV"
+id = "eab18aaa7ed3456190d59a8336b858bc"
+preview_id = "f62fd119b0d0440e86021aa79a4f288a"
+
+
+[[env.preview.vars]]
+JWT_ISSUER="tsuji1-blog-preview"

@@ -5,7 +5,7 @@ export const apiDriver: ContentDriver = {
   async getPostSlugs() {
     const res = await fetch("/api/posts", { next: { revalidate: 60 } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
+    const json = await res.json() as { slugs: string[] };
     return json.slugs as string[];
   },
   async getPostBySlug(slug: string) {

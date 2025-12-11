@@ -42,6 +42,16 @@ const layout = (title: string, content: string) => html`
   <title>${title} | tsuji1 website</title>
   <meta name="description" content="Welcome to my page!">
   <link rel="icon" type="image/png" href="https://github.com/tsuji1.png">
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});">
+  </script>
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
   <style>
     :root {
       --background: #ffffff;
@@ -361,16 +371,19 @@ app.get('/:slug', async (c) => {
   const title = meta.title ?? slug.replace(/-/g, ' ');
   const dateLabel = meta.date ? meta.date.slice(0, 10) : '';
   
-  // Extract headings for TOC
-  const headingRegex = /<h([1-5])[^>]*(?:id="([^"]*)")?[^>]*>([^<]*)<\/h[1-5]>/gi;
+  // Extract headings for TOC (handles nested anchor tags from rehype-autolink-headings)
+  const headingRegex = /<h([2-5])(?:\s+id="([^"]*)")?[^>]*>([\s\S]*?)<\/h\1>/gi;
   const tocItems: { level: string; id: string; text: string }[] = [];
   let match;
   let processedHtml = postHtml;
   let headingIndex = 0;
   
-  while ((match = headingRegex.exec(postHtml)) !== null) {
+  // Create a temp regex to avoid infinite loop
+  const tempRegex = /<h([2-5])(?:\s+id="([^"]*)")?[^>]*>([\s\S]*?)<\/h\1>/gi;
+  while ((match = tempRegex.exec(postHtml)) !== null) {
     const level = match[1];
-    let id = match[2];
+    let id = match[2] || '';
+    // Strip HTML tags from heading text to get plain text
     const text = match[3].replace(/<[^>]*>/g, '').trim();
     
     if (!id && text) {

@@ -1,0 +1,89 @@
+---
+title: 数式とコード表示テスト
+date: 2025-12-11
+excerpt: KaTeXによる数式表示とHighlight.jsによるコードハイライトのテスト
+tags:
+  - Test
+  - KaTeX
+  - Highlight.js
+---
+
+## はじめに
+
+このページでは数式とコードハイライトの表示をテストします。
+
+## 数学的な式
+
+インライン数式: $E = mc^2$
+
+ブロック数式:
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$
+
+### 二次方程式の解
+
+$$
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$
+
+## コードハイライト
+
+### TypeScript
+
+```typescript
+interface Post {
+  title: string;
+  date: string;
+  tags: string[];
+}
+
+const greet = (name: string): string => {
+  return `Hello, ${name}!`;
+};
+```
+
+### Python
+
+```python
+def fibonacci(n: int) -> list[int]:
+    sequence = [0, 1]
+    for i in range(2, n):
+        sequence.append(sequence[i-1] + sequence[i-2])
+    return sequence
+
+print(fibonacci(10))
+```
+
+### Shell
+
+```bash
+# GitHubからclone
+git clone https://github.com/tsuji1/tsuji1-blog.git
+cd tsuji1-blog
+npm install
+npm run dev
+```
+
+## TOCのテスト
+
+### セクション1
+
+ここはセクション1の内容です。
+
+### セクション2
+
+ここはセクション2の内容です。
+
+#### サブセクション2.1
+
+サブセクションの内容。
+
+##### さらに深いセクション
+
+h5見出しのテスト。
+
+## まとめ
+
+テスト完了！

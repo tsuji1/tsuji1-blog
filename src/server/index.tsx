@@ -332,7 +332,7 @@ app.get('/blog', async (c) => {
       : '';
     return `
       <li class="blog-item">
-        <a href="/${meta.slug}" class="blog-link">
+        <a href="/blog/${meta.slug}" class="blog-link">
           <h2 class="blog-item-title">${title}</h2>
           ${dateLabel ? `<small class="blog-item-date">${dateLabel}</small>` : ''}
           ${tagsHtml}
@@ -407,8 +407,8 @@ app.get('/feed.xml', async (c) => {
   const items = posts.map(post => `
     <item>
       <title><![CDATA[${post.title || post.slug}]]></title>
-      <link>${baseUrl}/${post.slug}</link>
-      <guid>${baseUrl}/${post.slug}</guid>
+      <link>${baseUrl}/blog/${post.slug}</link>
+      <guid>${baseUrl}/blog/${post.slug}</guid>
       <pubDate>${post.date ? new Date(post.date).toUTCString() : ''}</pubDate>
       <description><![CDATA[${post.excerpt || ''}]]></description>
     </item>
@@ -433,7 +433,7 @@ app.get('/feed.xml', async (c) => {
 });
 
 // Post detail page
-app.get('/:slug', async (c) => {
+app.get('/blog/:slug', async (c) => {
   const slug = c.req.param('slug');
   
   // Skip if it looks like a file request

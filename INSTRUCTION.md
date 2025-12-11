@@ -1,96 +1,147 @@
 # ブログ運用ガイド
 
-## 記事の作成と投稿
+## クイックスタート
 
-### 1. MDXファイルを作成
+```bash
+# 記事を投稿（ローカル開発中）
+npm run publish:post [slug]
 
-`content/posts/[slug].mdx` にファイルを作成：
+# プレビュー環境に投稿
+npm run publish:preview [slug]
+```
+
+---
+
+## 記事の書き方
+
+### 1. ファイルを作成
+
+`content/posts/[slug].mdx` を作成：
 
 ```mdx
 ---
 title: 記事のタイトル
 date: 2025-01-15
-excerpt: 記事の概要（ブログ一覧に表示）
+excerpt: 記事の概要（ブログ一覧に表示される）
 tags:
   - CTF
   - Security
   - Web
 ---
 
-ここに本文をMarkdown形式で記述。
+記事の本文をMarkdown形式で書く。
 
-## 見出し
+## 見出し（h2）
 
 本文の続き...
+
+### サブ見出し（h3）
+
+- リスト項目1
+- リスト項目2
 ```
 
-### 2. 記事を投稿
+### Frontmatter フィールド
 
-```bash
-node --env-file=.env scripts/publish.mts [slug]
+| フィールド | 必須 | 説明 |
+|-----------|-----|------|
+| `title` | ✅ | 記事タイトル |
+| `date` | ✅ | 投稿日 (YYYY-MM-DD) |
+| `excerpt` | 推奨 | ブログ一覧に表示される概要 |
+| `tags` | 任意 | タグ配列（サイドバーでフィルタリング可） |
+
+### サポートする記法
+
+| 記法 | 説明 |
+|------|------|
+| `# `, `## `, `### `... | 見出し（記事内に自動で # プレフィックス表示） |
+| `**太字**` | **太字** |
+| `` `コード` `` | インラインコード |
+| ` ```lang ` | コードブロック（シンタックスハイライト対応） |
+| `$E=mc^2$` | インライン数式（KaTeX） |
+| `$$..$$` | ブロック数式（KaTeX） |
+| `![alt](./image.png)` | 画像（相対パス → R2に自動アップロード） |
+
+---
+
+## 画像を使う
+
+### 方法1: 記事と同じディレクトリに配置（推奨）
+
+```
+content/posts/
+├── my-article.mdx
+└── my-article/
+    ├── screenshot1.png
+    └── diagram.svg
 ```
 
-例: `content/posts/my-first-post.mdx` を投稿する場合：
+記事内での参照：
+```markdown
+![スクリーンショット](./screenshot1.png)
+```
+
+**`publish:post` 実行時に自動で：**
+1. 画像がR2にアップロードされる
+2. パスが `/images/my-article/screenshot1.png` に変換される
+
+### 方法2: 手動アップロード
 
 ```bash
-node --env-file=.env scripts/publish.mts my-first-post
+# R2に直接アップロード
+npx wrangler r2 object put tsuji1-blog-images/path/to/image.png --file ./local/image.png --remote
+
+# プレビュー環境用
+npx wrangler r2 object put tsuji1-blog-images-preview/path/to/image.png --file ./local/image.png --remote
+```
+
+記事内で参照：
+```html
+<img src="/images/path/to/image.png" alt="説明" />
 ```
 
 ---
 
-## 開発
+## 開発・テスト
 
 ### ローカル開発
 
 ```bash
-# ローカルKV/R2エミュレータ使用
 npm run dev
+# → http://localhost:8787
 ```
 
-### リモート接続
+- KV/R2はローカルエミュレータを使用
+- 変更したら即座に反映
+
+### プレビュー環境でテスト
 
 ```bash
-# 本番KV/R2に接続（データ確認用）
-npm run dev:remote
+# 1. 記事をプレビューに投稿
+npm run publish:preview my-article
+
+# 2. プレビューサイトを確認
+# → https://tsuji1-blog-preview.yuzu777yuzu0.workers.dev/my-article
+```
+
+### 本番投稿
+
+```bash
+# 本番用サーバーを起動してから
+# （または本番環境URL設定後）
+npm run publish:post my-article
 ```
 
 ---
 
 ## デプロイ
 
-> **注意**: `wrangler` コマンドは `npx wrangler` で実行してください。
-
-### 初回セットアップ
-
 ```bash
-# R2バケット作成
-npx wrangler r2 bucket create tsuji1-blog-images
-```
-
-### デプロイコマンド
-
-```bash
-# 本番
+# 本番デプロイ
 npm run deploy
 
-# プレビュー
+# プレビューデプロイ
 npm run deploy:preview
-```
-
----
-
-## 画像の管理
-
-### R2に画像をアップロード
-
-```bash
-npx wrangler r2 object put tsuji1-blog-images/[filename] --file ./path/to/image.png
-```
-
-### 記事内で参照
-
-```html
-<img src="/images/[filename]" alt="説明" />
 ```
 
 ---
@@ -98,98 +149,79 @@ npx wrangler r2 object put tsuji1-blog-images/[filename] --file ./path/to/image.
 ## 環境変数 (.env)
 
 ```env
-JWT_SECRET=your-secret-key
+JWT_SECRET=your-secret-key-here
 JWT_ISSUER=tsuji1-blog
 API=http://localhost:8787
 ```
 
----
-
-## JWT認証の仕組み
-
-### 概要
-
-記事投稿API (`POST /api/posts`) は **JWT (JSON Web Token)** で認証されています。
-これにより、秘密鍵を持つ人だけが記事を投稿・更新できます。
-
-### フロー
-
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ publish.mts │───>│ JWT Token   │───>│ API Server  │
-│   (ローカル) │    │ (署名付き)   │    │ (検証)      │
-└─────────────┘    └─────────────┘    └─────────────┘
-      │                   │                  │
-      │ JWT_SECRET で署名  │ Bearerトークン    │ JWT_SECRET で検証
-      │                   │ として送信        │ issuer/期限チェック
-```
-
-### 関係するファイル
-
-| ファイル | 役割 |
-|---------|------|
-| `.env` | `JWT_SECRET` を保存（ローカル用、Gitignore対象） |
-| `publish.mts` | JWTを生成してAPIに送信 |
-| `src/server/api.ts` | JWTを検証、正しければ投稿許可 |
-| Cloudflare Secret | 本番/プレビュー環境の `JWT_SECRET` |
-
-### JWT生成（publish.mts）
-
-```typescript
-const token = await new SignJWT({ role: "editor" })
-  .setProtectedHeader({ alg: "HS256" })
-  .setIssuer(JWT_ISSUER)      // "tsuji1-blog" or "tsuji1-blog-preview"
-  .setExpirationTime("10m")   // 10分で期限切れ
-  .sign(new TextEncoder().encode(JWT_SECRET));
-```
-
-### JWT検証（api.ts）
-
-```typescript
-const { payload } = await jwtVerify(token, secret, {
-  issuer: env.JWT_ISSUER,     // 環境変数と一致するかチェック
-  clockTolerance: '60s',
-});
-```
-
-### セキュリティポイント
-
-1. **JWT_SECRET は絶対に公開しない** - `.env` は `.gitignore` に含まれている
-2. **issuer が一致しないとエラー** - 本番とプレビューで別々の issuer
-3. **10分で期限切れ** - 長時間有効なトークンは危険
-4. **Cloudflare Secret** - `wrangler secret put` で安全に保存される（暗号化）
-
-### 環境別のシークレット設定
+### Cloudflare シークレット設定
 
 ```bash
-# 本番環境
+# 本番
 npx wrangler secret put JWT_SECRET
 
-# プレビュー環境
+# プレビュー
 npx wrangler secret put JWT_SECRET --env preview
 ```
+
+---
+
+## npm scripts 一覧
+
+| コマンド | 説明 |
+|----------|------|
+| `npm run dev` | ローカル開発サーバー起動 |
+| `npm run dev:remote` | リモートKV/R2接続で起動 |
+| `npm run deploy` | 本番デプロイ |
+| `npm run deploy:preview` | プレビューデプロイ |
+| `npm run publish:post [slug]` | 記事を投稿（ローカル/本番） |
+| `npm run publish:preview [slug]` | 記事をプレビューに投稿 |
+
 ---
 
 ## ディレクトリ構成
 
 ```
 tsuji1-blog/
-├── content/posts/     # MDX記事ファイル
-├── public/            # 静的ファイル
+├── content/posts/          # MDX記事
+│   ├── my-article.mdx
+│   └── my-article/         # 記事用画像（任意）
+│       └── image.png
+├── public/                 # 静的ファイル
 ├── scripts/
-│   ├── publish.mts    # 記事投稿スクリプト
-│   └── seed-tags.mts  # テストデータ投入
-├── src/
-│   └── server/
-│       ├── index.tsx  # Hono SSRエントリ
-│       └── api.ts     # APIルート
-└── wrangler.toml      # Cloudflare設定
+│   └── publish.mts         # 記事投稿スクリプト
+├── src/server/
+│   ├── index.tsx           # Hono SSR + ルーティング
+│   └── api.ts              # APIルート
+├── .env                    # 環境変数（Git管理外）
+└── wrangler.toml           # Cloudflare設定
 ```
 
 ---
 
-## タグについて
+## トラブルシューティング
 
-- frontmatterの `tags` 配列にタグを指定
-- ブログページ左側にタグサイドバー表示
-- `?tag=xxx` でフィルタリング可能
+### `401 Unauthorized`
+
+→ `JWT_SECRET` が正しく設定されているか確認
+
+```bash
+# プレビュー環境のシークレット確認
+npx wrangler secret list --env preview
+```
+
+### 画像が404
+
+→ `--remote` フラグを付けてR2にアップロードし直す
+
+```bash
+npx wrangler r2 object put tsuji1-blog-images/path/image.png --file ./image.png --remote
+```
+
+### ローカルでKVが空
+
+→ `npm run dev` 後に seed スクリプトでテストデータ投入
+
+```bash
+node --env-file=.env scripts/seed-tags.mts
+```

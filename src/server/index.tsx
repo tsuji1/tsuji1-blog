@@ -388,7 +388,10 @@ app.get('/blog', async (c) => {
   return c.html(layout('Blog', content));
 });
 
-// RSS Feed (must be before /:slug to match first)
+// RSS redirect
+app.get('/rss', (c) => c.redirect('/feed.xml', 301));
+
+// RSS Feed (must be before /blog/:slug to match first)
 app.get('/feed.xml', async (c) => {
   const idx = await c.env.BLOG_POSTS_KV.get('posts:index');
   const slugs: string[] = idx ? JSON.parse(idx) : [];

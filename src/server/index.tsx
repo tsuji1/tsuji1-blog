@@ -48,8 +48,9 @@ const layout = (title: string, content: string) => html`
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
     onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});">
   </script>
-  <!-- Highlight.js for syntax highlighting -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+  <!-- Highlight.js for syntax highlighting (light/dark adaptive) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
   <style>
@@ -169,11 +170,11 @@ const layout = (title: string, content: string) => html`
     /* TOC Sidebar */
     .toc-sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 2rem; align-self: flex-start; }
     .toc-wrapper { background: rgba(128,128,128,0.1); backdrop-filter: blur(8px); padding: 1rem; border-radius: 0.5rem; }
-    .toc-title { font-size: 0.875rem; font-weight: bold; margin-bottom: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; }
+    .toc-title { font-size: 0.875rem; font-weight: bold; margin-bottom: 0.75rem; color: var(--foreground); text-transform: uppercase; letter-spacing: 0.05em; }
     .toc-list { list-style: none; display: flex; flex-direction: column; gap: 0.375rem; }
     .toc-item { font-size: 0.8rem; }
-    .toc-item a { color: var(--gray-500); display: block; padding: 0.25rem 0; transition: color 0.2s; }
-    .toc-item a:hover { color: var(--foreground); }
+    .toc-item a { color: var(--foreground); display: block; padding: 0.25rem 0; transition: opacity 0.2s; opacity: 0.7; }
+    .toc-item a:hover { opacity: 1; }
     .toc-item.toc-h2 { padding-left: 0; }
     .toc-item.toc-h3 { padding-left: 0.75rem; }
     .toc-item.toc-h4 { padding-left: 1.5rem; }

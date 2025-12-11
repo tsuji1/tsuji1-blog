@@ -58,11 +58,13 @@ npm run dev:remote
 
 ## デプロイ
 
+> **注意**: `wrangler` コマンドは `npx wrangler` で実行してください。
+
 ### 初回セットアップ
 
 ```bash
 # R2バケット作成
-wrangler r2 bucket create tsuji1-blog-images
+npx wrangler r2 bucket create tsuji1-blog-images
 ```
 
 ### デプロイコマンド
@@ -82,7 +84,7 @@ npm run deploy:preview
 ### R2に画像をアップロード
 
 ```bash
-wrangler r2 object put tsuji1-blog-images/[filename] --file ./path/to/image.png
+npx wrangler r2 object put tsuji1-blog-images/[filename] --file ./path/to/image.png
 ```
 
 ### 記事内で参照

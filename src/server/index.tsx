@@ -88,15 +88,33 @@ const layout = (title: string, content: string) => html`
     .social-links { display: flex; gap: 1rem; margin-top: 1rem; }
     .social-link { font-size: 2rem; transition: color 0.2s; }
     .social-link:hover { color: var(--gray-600); }
-    .blog-container { max-width: 56rem; margin: 0 auto; padding: 4rem 1rem 2rem; }
-    .blog-title { font-size: 2.25rem; font-weight: bold; margin-bottom: 2rem; }
-    .blog-list { list-style: none; display: flex; flex-direction: column; gap: 2rem; }
+    /* Blog layout with sidebar */
+    .blog-layout { display: flex; gap: 2rem; max-width: 72rem; margin: 0 auto; padding: 2rem 1rem; }
+    .tags-sidebar { width: 200px; flex-shrink: 0; padding-top: 2rem; }
+    .tags-title { font-size: 1rem; font-weight: bold; margin-bottom: 1rem; color: var(--gray-600); }
+    .tags-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .tag-link { display: block; padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: var(--gray-600); transition: background 0.2s; }
+    .tag-link:hover { background: var(--gray-100); }
+    .tag-link.active { background: var(--gray-800); color: white; }
+    @media (max-width: 768px) { .blog-layout { flex-direction: column; } .tags-sidebar { width: 100%; padding-top: 0; } .tags-list { flex-direction: row; flex-wrap: wrap; } }
+    .blog-container { flex: 1; max-width: 56rem; padding: 2rem 0; }
+    .blog-title { font-size: 2.25rem; font-weight: bold; margin-bottom: 0.5rem; }
+    .blog-count { color: var(--gray-500); margin-bottom: 2rem; }
+    .blog-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
     .blog-item { background: var(--gray-50); border-radius: 0.5rem; transition: background 0.2s; }
     .blog-item:hover { background: var(--gray-100); }
     .blog-link { display: block; padding: 1.5rem; }
-    .blog-item-title { color: var(--gray-600); margin-bottom: 0.75rem; margin-top: 0.5rem; }
-    .blog-item-date { color: var(--gray-600); }
-    .blog-item-excerpt { color: var(--gray-600); margin-top: 1rem; margin-bottom: 0.5rem; }
+    .blog-item-title { color: var(--foreground); font-size: 1.25rem; margin-bottom: 0.5rem; margin-top: 0; }
+    .blog-item-date { color: var(--gray-500); font-size: 0.875rem; }
+    .blog-item-tags { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .blog-tag { background: var(--gray-200, #e5e7eb); color: var(--gray-600); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; }
+    .blog-item-excerpt { color: var(--gray-600); margin-top: 0.75rem; margin-bottom: 0; font-size: 0.9rem; }
+    /* Pagination */
+    .pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 2rem; align-items: center; flex-wrap: wrap; }
+    .page-link { padding: 0.5rem 1rem; border-radius: 0.375rem; background: var(--gray-100); color: var(--foreground); transition: background 0.2s; }
+    .page-link:hover { background: var(--gray-200, #e5e7eb); }
+    .page-current { padding: 0.5rem 1rem; border-radius: 0.375rem; background: var(--gray-800); color: white; }
+    .page-ellipsis { padding: 0.5rem; color: var(--gray-500); }
     .post-container { max-width: 56rem; margin: 0 auto; padding: 3rem 1rem; }
     .post-article { max-width: 65ch; margin: 0 auto; }
     .post-header { margin-bottom: 2rem; text-align: center; }
@@ -157,12 +175,17 @@ app.get('/', (c) => {
   return c.html(layout('Profile', content));
 });
 
-// Blog list page
+// Blog list page with pagination and tag filtering
 app.get('/blog', async (c) => {
+  const POSTS_PER_PAGE = 10;
+  const page = parseInt(c.req.query('page') || '1', 10);
+  const filterTag = c.req.query('tag') || '';
+  
   const idx = await c.env.BLOG_POSTS_KV.get('posts:index');
   const slugs: string[] = idx ? JSON.parse(idx) : [];
   
-  const posts = await Promise.all(
+  // Fetch all posts with their metadata
+  const allPosts = await Promise.all(
     slugs.map(async (slug) => {
       const m = await c.env.BLOG_POSTS_KV.get(`post:${slug}:meta`);
       const meta = m ? JSON.parse(m) : {};
@@ -170,28 +193,108 @@ app.get('/blog', async (c) => {
     })
   );
   
-  const postsHtml = posts.map((meta: { slug: string; title?: string; date?: string; excerpt?: string }) => {
+  // Collect all tags
+  const allTags = new Set<string>();
+  allPosts.forEach((post: { tags?: string[] }) => {
+    if (post.tags && Array.isArray(post.tags)) {
+      post.tags.forEach((tag: string) => allTags.add(tag));
+    }
+  });
+  const sortedTags = Array.from(allTags).sort();
+  
+  // Filter by tag if provided
+  let filteredPosts = allPosts;
+  if (filterTag) {
+    filteredPosts = allPosts.filter((post: { tags?: string[] }) => 
+      post.tags && post.tags.includes(filterTag)
+    );
+  }
+  
+  // Sort by date (newest first)
+  filteredPosts.sort((a: { date?: string }, b: { date?: string }) => {
+    const dateA = a.date || '';
+    const dateB = b.date || '';
+    return dateB.localeCompare(dateA);
+  });
+  
+  // Pagination
+  const totalPosts = filteredPosts.length;
+  const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+  const startIndex = (page - 1) * POSTS_PER_PAGE;
+  const paginatedPosts = filteredPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
+  
+  // Generate tags sidebar HTML
+  const tagsSidebarHtml = sortedTags.length > 0 ? `
+    <aside class="tags-sidebar">
+      <h3 class="tags-title">Tags</h3>
+      <ul class="tags-list">
+        <li><a href="/blog" class="tag-link ${!filterTag ? 'active' : ''}">All</a></li>
+        ${sortedTags.map(tag => `
+          <li><a href="/blog?tag=${encodeURIComponent(tag)}" class="tag-link ${filterTag === tag ? 'active' : ''}">${tag}</a></li>
+        `).join('')}
+      </ul>
+    </aside>
+  ` : '';
+  
+  // Generate posts HTML
+  const postsHtml = paginatedPosts.map((meta: { slug: string; title?: string; date?: string; excerpt?: string; tags?: string[] }) => {
     const title = meta.title ?? meta.slug.replace(/-/g, ' ');
     const dateLabel = meta.date ? meta.date.slice(0, 10) : '';
+    const tagsHtml = meta.tags && meta.tags.length > 0 
+      ? `<div class="blog-item-tags">${meta.tags.map(t => `<span class="blog-tag">${t}</span>`).join('')}</div>`
+      : '';
     return `
       <li class="blog-item">
         <a href="/${meta.slug}" class="blog-link">
           <h2 class="blog-item-title">${title}</h2>
           ${dateLabel ? `<small class="blog-item-date">${dateLabel}</small>` : ''}
+          ${tagsHtml}
           ${meta.excerpt ? `<p class="blog-item-excerpt">${meta.excerpt}</p>` : ''}
         </a>
       </li>
     `;
   }).join('');
   
+  // Generate pagination HTML
+  let paginationHtml = '';
+  if (totalPages > 1) {
+    const pageLinks = [];
+    const baseUrl = filterTag ? `/blog?tag=${encodeURIComponent(filterTag)}&` : '/blog?';
+    
+    if (page > 1) {
+      pageLinks.push(`<a href="${baseUrl}page=${page - 1}" class="page-link">← Prev</a>`);
+    }
+    
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === page) {
+        pageLinks.push(`<span class="page-current">${i}</span>`);
+      } else if (Math.abs(i - page) <= 2 || i === 1 || i === totalPages) {
+        pageLinks.push(`<a href="${baseUrl}page=${i}" class="page-link">${i}</a>`);
+      } else if (Math.abs(i - page) === 3) {
+        pageLinks.push(`<span class="page-ellipsis">...</span>`);
+      }
+    }
+    
+    if (page < totalPages) {
+      pageLinks.push(`<a href="${baseUrl}page=${page + 1}" class="page-link">Next →</a>`);
+    }
+    
+    paginationHtml = `<nav class="pagination">${pageLinks.join('')}</nav>`;
+  }
+  
   const content = `
-    <div class="blog-container">
-      <section class="blog-section">
-        <h1 class="blog-title">Blog</h1>
-        <ul class="blog-list">
-          ${postsHtml || '<li>No posts yet.</li>'}
-        </ul>
-      </section>
+    <div class="blog-layout">
+      ${tagsSidebarHtml}
+      <div class="blog-container">
+        <section class="blog-section">
+          <h1 class="blog-title">Blog${filterTag ? ` - #${filterTag}` : ''}</h1>
+          ${totalPosts > 0 ? `<p class="blog-count">${totalPosts} posts${filterTag ? ` tagged "${filterTag}"` : ''}</p>` : ''}
+          <ul class="blog-list">
+            ${postsHtml || '<li>No posts found.</li>'}
+          </ul>
+          ${paginationHtml}
+        </section>
+      </div>
     </div>
   `;
   

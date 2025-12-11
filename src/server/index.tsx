@@ -164,6 +164,8 @@ const layout = (title: string, content: string) => html`
     .post-content code { background: var(--gray-100); padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875em; }
     .post-content pre code { background: none; padding: 0; }
     .post-content a { color: #60a5fa; text-decoration: underline; }
+    .post-content h1 a, .post-content h2 a, .post-content h3 a, .post-content h4 a, .post-content h5 a { color: var(--foreground); text-decoration: none; }
+    .post-content h1 a:hover, .post-content h2 a:hover, .post-content h3 a:hover, .post-content h4 a:hover, .post-content h5 a:hover { text-decoration: underline; }
     .post-content img { max-width: 100%; height: auto; border-radius: 0.5rem; }
     .post-content ul, .post-content ol { margin-bottom: 1rem; padding-left: 1.5rem; }
     .post-content li { margin-bottom: 0.5rem; }
@@ -175,6 +177,7 @@ const layout = (title: string, content: string) => html`
     .toc-item { font-size: 0.8rem; }
     .toc-item a { color: var(--foreground); display: block; padding: 0.25rem 0; transition: opacity 0.2s; opacity: 0.7; }
     .toc-item a:hover { opacity: 1; }
+    .toc-prefix { color: var(--gray-500); font-family: monospace; font-size: 0.75rem; }
     .toc-item.toc-h2 { padding-left: 0; }
     .toc-item.toc-h3 { padding-left: 0.75rem; }
     .toc-item.toc-h4 { padding-left: 1.5rem; }
@@ -405,11 +408,14 @@ app.get('/:slug', async (c) => {
       <div class="toc-wrapper">
         <h3 class="toc-title">目次</h3>
         <ul class="toc-list">
-          ${tocItems.map(item => `
+          ${tocItems.map(item => {
+            const prefix = '#'.repeat(parseInt(item.level));
+            return `
             <li class="toc-item toc-h${item.level}">
-              <a href="#${item.id}">${item.text}</a>
+              <a href="#${item.id}"><span class="toc-prefix">${prefix}</span> ${item.text}</a>
             </li>
-          `).join('')}
+          `;
+          }).join('')}
         </ul>
       </div>
     </aside>

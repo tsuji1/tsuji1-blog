@@ -3,145 +3,124 @@
 ## クイックスタート
 
 ```bash
-# 記事を投稿（ローカル開発中）
-npm run publish:post [slug]
+# ヘルプを表示
+npm run blog
+
+# 記事を投稿
+npm run blog publish my-article
 
 # プレビュー環境に投稿
-npm run publish:preview [slug]
+npm run blog publish my-article -- --preview
+
+# 記事一覧を表示
+npm run blog list
+
+# 記事を削除
+npm run blog delete old-article
 ```
 
 ---
 
-## 記事の書き方
+## 記事の構成
 
-### 1. ファイルを作成
+### 構成パターン
 
-`content/posts/[slug].mdx` を作成：
+記事は2つの形式で作成できます：
 
-```mdx
+```
+content/posts/
+├── simple-article.mdx              # パターン1: 単一ファイル
+│
+└── article-with-images/            # パターン2: ディレクトリ形式
+    ├── index.mdx                   # 記事本文
+    ├── screenshot.png              # 画像（自動アップロード）
+    └── diagram.svg
+```
+
+### Frontmatter
+
+```yaml
 ---
 title: 記事のタイトル
 date: 2025-01-15
-excerpt: 記事の概要（ブログ一覧に表示される）
+excerpt: ブログ一覧に表示される概要（1-2行）
 tags:
   - CTF
   - Security
   - Web
 ---
-
-記事の本文をMarkdown形式で書く。
-
-## 見出し（h2）
-
-本文の続き...
-
-### サブ見出し（h3）
-
-- リスト項目1
-- リスト項目2
 ```
-
-### Frontmatter フィールド
 
 | フィールド | 必須 | 説明 |
 |-----------|-----|------|
 | `title` | ✅ | 記事タイトル |
 | `date` | ✅ | 投稿日 (YYYY-MM-DD) |
-| `excerpt` | 推奨 | ブログ一覧に表示される概要 |
-| `tags` | 任意 | タグ配列（サイドバーでフィルタリング可） |
+| `excerpt` | 推奨 | 概要文 |
+| `tags` | 任意 | タグ配列 |
 
 ### サポートする記法
 
 | 記法 | 説明 |
 |------|------|
-| `# `, `## `, `### `... | 見出し（記事内に自動で # プレフィックス表示） |
+| `# `, `## `, `### `... | 見出し（自動で # プレフィックス表示） |
 | `**太字**` | **太字** |
 | `` `コード` `` | インラインコード |
-| ` ```lang ` | コードブロック（シンタックスハイライト対応） |
+| ` ```lang ` | コードブロック（シンタックスハイライト） |
 | `$E=mc^2$` | インライン数式（KaTeX） |
-| `$$..$$` | ブロック数式（KaTeX） |
+| `$$..$$` | ブロック数式 |
 | `![alt](./image.png)` | 画像（相対パス → R2に自動アップロード） |
 
 ---
 
-## 画像を使う
+## Blog CLI コマンド
 
-### 方法1: 記事と同じディレクトリに配置（推奨）
-
-```
-content/posts/
-├── my-article.mdx
-└── my-article/
-    ├── screenshot1.png
-    └── diagram.svg
-```
-
-記事内での参照：
-```markdown
-![スクリーンショット](./screenshot1.png)
-```
-
-**`publish:post` 実行時に自動で：**
-1. 画像がR2にアップロードされる
-2. パスが `/images/my-article/screenshot1.png` に変換される
-
-### 方法2: 手動アップロード
+### publish - 記事を投稿
 
 ```bash
-# R2に直接アップロード
-npx wrangler r2 object put tsuji1-blog-images/path/to/image.png --file ./local/image.png --remote
-
-# プレビュー環境用
-npx wrangler r2 object put tsuji1-blog-images-preview/path/to/image.png --file ./local/image.png --remote
+npm run blog publish <slug> [--preview]
 ```
 
-記事内で参照：
-```html
-<img src="/images/path/to/image.png" alt="説明" />
+- MDXファイルを読み込んでHTMLに変換
+- 画像を自動でR2にアップロード
+- KVに記事を保存
+
+### delete - 記事を削除
+
+```bash
+npm run blog delete <slug> [--preview]
 ```
+
+- KVから記事を削除（R2の画像は手動削除が必要）
+
+### list - 記事一覧
+
+```bash
+npm run blog list [--preview]
+```
+
+- 投稿済みの記事を日付順で一覧表示
+
+### update-tags - タグのみ更新
+
+```bash
+npm run blog update-tags <slug> [--preview]
+```
+
+- MDXのfrontmatterからタグを再読み込みして更新
 
 ---
 
-## 開発・テスト
-
-### ローカル開発
+## 開発
 
 ```bash
+# ローカル開発
 npm run dev
-# → http://localhost:8787
-```
 
-- KV/R2はローカルエミュレータを使用
-- 変更したら即座に反映
+# プレビュー環境にデプロイ
+npm run deploy:preview
 
-### プレビュー環境でテスト
-
-```bash
-# 1. 記事をプレビューに投稿
-npm run publish:preview my-article
-
-# 2. プレビューサイトを確認
-# → https://tsuji1-blog-preview.yuzu777yuzu0.workers.dev/my-article
-```
-
-### 本番投稿
-
-```bash
-# 本番用サーバーを起動してから
-# （または本番環境URL設定後）
-npm run publish:post my-article
-```
-
----
-
-## デプロイ
-
-```bash
 # 本番デプロイ
 npm run deploy
-
-# プレビューデプロイ
-npm run deploy:preview
 ```
 
 ---
@@ -154,7 +133,7 @@ JWT_ISSUER=tsuji1-blog
 API=http://localhost:8787
 ```
 
-### Cloudflare シークレット設定
+### Cloudflare シークレット
 
 ```bash
 # 本番
@@ -170,12 +149,14 @@ npx wrangler secret put JWT_SECRET --env preview
 
 | コマンド | 説明 |
 |----------|------|
-| `npm run dev` | ローカル開発サーバー起動 |
-| `npm run dev:remote` | リモートKV/R2接続で起動 |
+| `npm run dev` | ローカル開発サーバー |
 | `npm run deploy` | 本番デプロイ |
 | `npm run deploy:preview` | プレビューデプロイ |
-| `npm run publish:post [slug]` | 記事を投稿（ローカル/本番） |
-| `npm run publish:preview [slug]` | 記事をプレビューに投稿 |
+| `npm run blog` | Blog CLI ヘルプ |
+| `npm run blog publish <slug>` | 記事投稿 |
+| `npm run blog delete <slug>` | 記事削除 |
+| `npm run blog list` | 記事一覧 |
+| `npm run blog update-tags <slug>` | タグ更新 |
 
 ---
 
@@ -183,45 +164,17 @@ npx wrangler secret put JWT_SECRET --env preview
 
 ```
 tsuji1-blog/
-├── content/posts/          # MDX記事
-│   ├── my-article.mdx
-│   └── my-article/         # 記事用画像（任意）
+├── content/posts/          # 記事ファイル
+│   ├── _template.mdx       # テンプレート
+│   ├── my-article.mdx      # 単一ファイル形式
+│   └── another-article/    # ディレクトリ形式
+│       ├── index.mdx
 │       └── image.png
-├── public/                 # 静的ファイル
 ├── scripts/
-│   └── publish.mts         # 記事投稿スクリプト
+│   └── blog-cli.mts        # Blog CLI
 ├── src/server/
-│   ├── index.tsx           # Hono SSR + ルーティング
-│   └── api.ts              # APIルート
-├── .env                    # 環境変数（Git管理外）
+│   ├── index.tsx           # Hono SSR
+│   └── api.ts              # API
+├── .env                    # 環境変数
 └── wrangler.toml           # Cloudflare設定
-```
-
----
-
-## トラブルシューティング
-
-### `401 Unauthorized`
-
-→ `JWT_SECRET` が正しく設定されているか確認
-
-```bash
-# プレビュー環境のシークレット確認
-npx wrangler secret list --env preview
-```
-
-### 画像が404
-
-→ `--remote` フラグを付けてR2にアップロードし直す
-
-```bash
-npx wrangler r2 object put tsuji1-blog-images/path/image.png --file ./image.png --remote
-```
-
-### ローカルでKVが空
-
-→ `npm run dev` 後に seed スクリプトでテストデータ投入
-
-```bash
-node --env-file=.env scripts/seed-tags.mts
 ```

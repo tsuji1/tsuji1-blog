@@ -122,4 +122,66 @@ api.post('/posts', async (c) => {
   });
 });
 
+// DELETE /api/posts/:slug - Delete post (requires JWT)
+api.delete('/posts/:slug', async (c) => {
+  const jwt = await verifyJWT(c.req.raw, c.env);
+  if (!jwt) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const slug = c.req.param('slug');
+
+  // Check if post exists
+  const metaRaw = await c.env.BLOG_POSTS_KV.get(`post:${slug}:meta`);
+  if (!metaRaw) {
+    return c.json({ error: 'Not Found' }, 404);
+  }
+
+  // Remove from index
+  const idxRaw = await c.env.BLOG_POSTS_KV.get('posts:index');
+  const list: string[] = idxRaw ? JSON.parse(idxRaw) : [];
+  const newList = list.filter(s => s !== slug);
+
+  await Promise.all([
+    c.env.BLOG_POSTS_KV.put('posts:index', JSON.stringify(newList)),
+    c.env.BLOG_POSTS_KV.delete(`post:${slug}:meta`),
+    c.env.BLOG_POSTS_KV.delete(`post:${slug}:html`),
+    c.env.BLOG_POSTS_KV.delete(`post:${slug}:mdx`),
+  ]);
+
+  return c.json({ ok: true, slug }, 200, {
+    'cache-control': 'no-store',
+  });
+});
+
+// PUT /api/posts/:slug/meta - Update post metadata only (requires JWT)
+api.put('/posts/:slug/meta', async (c) => {
+  const jwt = await verifyJWT(c.req.raw, c.env);
+  if (!jwt) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const slug = c.req.param('slug');
+
+  // Check if post exists
+  const oldMeta = await c.env.BLOG_POSTS_KV.get(`post:${slug}:meta`);
+  if (!oldMeta) {
+    return c.json({ error: 'Not Found' }, 404);
+  }
+
+  const body = await c.req.text();
+  let meta: Record<string, unknown>;
+  try {
+    meta = JSON.parse(body);
+  } catch {
+    return c.json({ error: 'Bad JSON' }, 400);
+  }
+
+  await c.env.BLOG_POSTS_KV.put(`post:${slug}:meta`, JSON.stringify(meta));
+
+  return c.json({ ok: true, slug, meta }, 200, {
+    'cache-control': 'no-store',
+  });
+});
+
 export default api;

@@ -8,8 +8,7 @@
     "dev:remote": "wrangler dev --remote",
     "deploy": "wrangler deploy",
     "deploy:preview": "wrangler deploy --env preview",
-    "publish:post": "node --env-file=.env scripts/publish.mts",
-    "publish:preview": "node --env-file=.env scripts/publish.mts --preview"
+    "blog": "node --env-file=.env scripts/blog-cli.mts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

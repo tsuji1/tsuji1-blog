@@ -32,16 +32,43 @@ app.get('/images/*', async (c) => {
   return new Response(object.body, { headers });
 });
 
-// Layout template
-const layout = (title: string, content: string) => html`
+// SEO metadata type
+type SEOMeta = {
+  description?: string;
+  ogImage?: string;
+  ogType?: string;
+  url?: string;
+};
+
+// Layout template with SEO support
+const layout = (title: string, content: string, seo: SEOMeta = {}) => {
+  const description = seo.description || 'tsuji1のブログです。技術記事やCTFについて書いています。';
+  const ogImage = seo.ogImage || 'https://github.com/tsuji1.png';
+  const ogType = seo.ogType || 'website';
+  const url = seo.url || 'https://tsuji1.dev';
+  
+  return html`
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} | tsuji1 website</title>
-  <meta name="description" content="Welcome to my page!">
+  <meta name="description" content="${description}">
   <link rel="icon" type="image/png" href="https://github.com/tsuji1.png">
+  <link rel="alternate" type="application/rss+xml" title="tsuji1 blog RSS" href="/feed.xml">
+  <!-- Open Graph -->
+  <meta property="og:title" content="${title} | tsuji1 website">
+  <meta property="og:description" content="${description}">
+  <meta property="og:image" content="${ogImage}">
+  <meta property="og:url" content="${url}">
+  <meta property="og:type" content="${ogType}">
+  <meta property="og:site_name" content="tsuji1 website">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="${title} | tsuji1 website">
+  <meta name="twitter:description" content="${description}">
+  <meta name="twitter:image" content="${ogImage}">
   <!-- KaTeX for math rendering -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -204,6 +231,7 @@ const layout = (title: string, content: string) => html`
 </body>
 </html>
 `;
+}
 
 // Profile page
 app.get('/', (c) => {
@@ -358,6 +386,50 @@ app.get('/blog', async (c) => {
   `;
   
   return c.html(layout('Blog', content));
+});
+
+// RSS Feed (must be before /:slug to match first)
+app.get('/feed.xml', async (c) => {
+  const idx = await c.env.BLOG_POSTS_KV.get('posts:index');
+  const slugs: string[] = idx ? JSON.parse(idx) : [];
+  
+  const posts = await Promise.all(
+    slugs.map(async (slug) => {
+      const m = await c.env.BLOG_POSTS_KV.get(`post:${slug}:meta`);
+      return { slug, ...(m ? JSON.parse(m) : {}) };
+    })
+  );
+  
+  // Sort by date (newest first)
+  posts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  
+  const baseUrl = 'https://tsuji1.dev';
+  const items = posts.map(post => `
+    <item>
+      <title><![CDATA[${post.title || post.slug}]]></title>
+      <link>${baseUrl}/${post.slug}</link>
+      <guid>${baseUrl}/${post.slug}</guid>
+      <pubDate>${post.date ? new Date(post.date).toUTCString() : ''}</pubDate>
+      <description><![CDATA[${post.excerpt || ''}]]></description>
+    </item>
+  `).join('');
+  
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tsuji1 blog</title>
+    <link>${baseUrl}</link>
+    <description>tsuji1のブログです。技術記事やCTFについて書いています。</description>
+    <language>ja</language>
+    <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
+    ${items}
+  </channel>
+</rss>`;
+  
+  return c.text(rss, 200, {
+    'Content-Type': 'application/rss+xml; charset=utf-8',
+    'Cache-Control': 'public, max-age=3600',
+  });
 });
 
 // Post detail page

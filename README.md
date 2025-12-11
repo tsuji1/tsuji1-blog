@@ -32,7 +32,23 @@ npm run deploy:preview
 詳細は [INSTRUCTION.md](./INSTRUCTION.md) を参照。
 
 ```bash
-# 1. content/posts/[slug].mdx を作成
-# 2. 投稿
-node --env-file=.env scripts/publish.mts [slug]
+npm run blog publish [slug]
 ```
+
+## RSS
+
+RSSフィードは以下で購読できます：
+
+```
+https://tsuji1.dev/feed.xml
+```
+
+## SEO
+
+以下のSEO対策が実装されています：
+
+- Open Graph (og:title, og:description, og:image, og:url)
+- Twitter Card (summary)
+- meta description
+- RSS autodiscovery (`<link rel="alternate">`)
+

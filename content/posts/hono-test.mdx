@@ -1,0 +1,36 @@
+---
+title: テスト記事 - Hono SSRで動作確認
+date: 2025-12-11
+excerpt: Hono SSRのプレビュー環境で動作確認するためのテスト記事です。
+tags:
+  - Test
+  - Hono
+  - Blog
+---
+
+## はじめに
+
+これは **Hono SSR** で構築されたブログのテスト記事です。
+
+## 機能確認
+
+- ✅ Markdown → HTML変換
+- ✅ タグ表示
+- ✅ 日付表示
+- ✅ ページネーション対応
+
+## コードブロック
+
+```typescript
+import { Hono } from 'hono';
+const app = new Hono();
+app.get('/', (c) => c.text('Hello Hono!'));
+export default app;
+```
+
+## リンク
+
+- [GitHub](https://github.com/tsuji1)
+- [Hono公式](https://hono.dev)
+
+以上、テスト完了！

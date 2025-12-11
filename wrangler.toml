@@ -27,4 +27,4 @@ id = "f62fd119b0d0440e86021aa79a4f288a"
 
 [[env.preview.r2_buckets]]
 binding = "IMAGES_R2"
-bucket_name = "tsuji1-blog-images"
+bucket_name = "tsuji1-blog-images-preview"

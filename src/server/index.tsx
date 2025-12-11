@@ -57,14 +57,15 @@ const layout = (title: string, content: string) => html`
     @media (prefers-color-scheme: dark) {
       :root {
         --background: #0a0a0a;
-        --foreground: #ededed;
+        --foreground: #f0f0f0;
         --gray-50: #1a1a1a;
-        --gray-100: #2a2a2a;
-        --gray-300: #4a4a4a;
-        --gray-500: #8a8a8a;
-        --gray-600: #a0a0a0;
-        --gray-700: #c0c0c0;
-        --gray-800: #2a2a2a;
+        --gray-100: #252525;
+        --gray-300: #555555;
+        --gray-500: #999999;
+        --gray-600: #bbbbbb;
+        --gray-700: #dddddd;
+        --gray-800: #1f1f1f;
+        --content-bg: #111111;
       }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -80,7 +81,16 @@ const layout = (title: string, content: string) => html`
     .nav-brand { color: white; font-weight: bold; font-size: 1.25rem; }
     .nav-links { display: flex; gap: 1rem; }
     .nav-link { color: var(--gray-300); padding: 0.5rem 0.75rem; border-radius: 0.375rem; transition: background 0.2s, color 0.2s; }
-    .nav-link:hover { background: var(--gray-700); color: white; }
+    .nav-link:hover { background: var(--gray-700); color: var(--foreground); }
+    @media (prefers-color-scheme: dark) {
+      .nav-link { color: #bbbbbb; }
+      .nav-link:hover { background: #333333; color: white; }
+    }
+    /* Back button */
+    .back-bar { max-width: 80rem; margin: 0 auto; padding: 1rem 1rem 0; }
+    .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--gray-600); font-size: 0.9rem; padding: 0.5rem 0; transition: color 0.2s; }
+    .back-btn:hover { color: var(--foreground); }
+    .back-btn svg { width: 1rem; height: 1rem; }
     .profile-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 60px); padding: 1rem; }
     .profile-content { display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem; }
     @media (min-width: 768px) { .profile-content { flex-direction: row; } }
@@ -88,22 +98,27 @@ const layout = (title: string, content: string) => html`
     .profile-info { margin-top: 1rem; text-align: center; }
     @media (min-width: 768px) { .profile-info { margin-top: 0; margin-left: 1.5rem; text-align: left; } }
     .profile-name { font-size: 1.5rem; font-weight: bold; }
-    .profile-desc { font-size: 1.125rem; }
-    .profile-detail { font-size: 1rem; margin-top: 0.5rem; }
+    .profile-desc { font-size: 1.125rem; color: var(--gray-600); }
+    .profile-detail { font-size: 1rem; margin-top: 0.5rem; color: var(--gray-500); }
+    @media (prefers-color-scheme: dark) {
+      .profile-desc { color: #cccccc; }
+      .profile-detail { color: #aaaaaa; }
+    }
     .social-links { display: flex; gap: 1rem; margin-top: 1rem; }
     .social-link { font-size: 2rem; transition: color 0.2s; }
     .social-link:hover { color: var(--gray-600); }
     /* Blog layout with sidebar */
     .blog-layout { display: flex; gap: 2rem; max-width: 72rem; margin: 0 auto; padding: 2rem 1rem; }
     .tags-sidebar { width: 200px; flex-shrink: 0; padding-top: 2rem; }
-    .tags-title { font-size: 1rem; font-weight: bold; margin-bottom: 1rem; color: var(--gray-600); }
+    .tags-title { font-size: 1rem; font-weight: bold; margin-bottom: 1rem; color: var(--foreground); }
     .tags-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
     .tag-link { display: block; padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: var(--gray-600); transition: background 0.2s; }
     .tag-link:hover { background: var(--gray-100); }
     .tag-link.active { background: var(--gray-800); color: white; }
+    @media (prefers-color-scheme: dark) { .tag-link { color: #cccccc; } .tag-link.active { background: #444444; } }
     @media (max-width: 768px) { .blog-layout { flex-direction: column; } .tags-sidebar { width: 100%; padding-top: 0; } .tags-list { flex-direction: row; flex-wrap: wrap; } }
     .blog-container { flex: 1; max-width: 56rem; padding: 2rem 0; }
-    .blog-title { font-size: 2.25rem; font-weight: bold; margin-bottom: 0.5rem; }
+    .blog-title { font-size: 2.25rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--foreground); }
     .blog-count { color: var(--gray-500); margin-bottom: 2rem; }
     .blog-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
     .blog-item { background: var(--gray-50); border-radius: 0.5rem; transition: background 0.2s; }
@@ -113,6 +128,7 @@ const layout = (title: string, content: string) => html`
     .blog-item-date { color: var(--gray-500); font-size: 0.875rem; }
     .blog-item-tags { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
     .blog-tag { background: var(--gray-200, #e5e7eb); color: var(--gray-600); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; }
+    @media (prefers-color-scheme: dark) { .blog-tag { background: #333; color: #ccc; } }
     .blog-item-excerpt { color: var(--gray-600); margin-top: 0.75rem; margin-bottom: 0; font-size: 0.9rem; }
     /* Pagination */
     .pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 2rem; align-items: center; flex-wrap: wrap; }
@@ -120,20 +136,39 @@ const layout = (title: string, content: string) => html`
     .page-link:hover { background: var(--gray-200, #e5e7eb); }
     .page-current { padding: 0.5rem 1rem; border-radius: 0.375rem; background: var(--gray-800); color: white; }
     .page-ellipsis { padding: 0.5rem; color: var(--gray-500); }
-    .post-container { max-width: 56rem; margin: 0 auto; padding: 3rem 1rem; }
+    /* Post page with TOC */
+    .post-layout { display: flex; max-width: 80rem; margin: 0 auto; padding: 2rem 1rem; gap: 2rem; }
+    .post-main { flex: 1; max-width: 56rem; }
+    .post-wrapper { background: var(--content-bg, var(--gray-50)); padding: 2rem 3rem; border-radius: 0.75rem; }
+    @media (prefers-color-scheme: dark) { .post-wrapper { background: #151515; } }
     .post-article { max-width: 65ch; margin: 0 auto; }
     .post-header { margin-bottom: 2rem; text-align: center; }
-    .post-title { font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; }
+    .post-title { font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; color: var(--foreground); }
     @media (min-width: 768px) { .post-title { font-size: 3rem; } }
     .post-date { color: var(--gray-500); }
     .post-content { line-height: 1.8; }
-    .post-content h1, .post-content h2, .post-content h3 { margin-top: 2rem; margin-bottom: 1rem; }
+    .post-content h1, .post-content h2, .post-content h3, .post-content h4, .post-content h5 { margin-top: 2rem; margin-bottom: 1rem; color: var(--foreground); }
     .post-content p { margin-bottom: 1rem; }
     .post-content pre { background: var(--gray-100); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; }
     .post-content code { background: var(--gray-100); padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875em; }
     .post-content pre code { background: none; padding: 0; }
-    .post-content a { color: #3b82f6; text-decoration: underline; }
+    .post-content a { color: #60a5fa; text-decoration: underline; }
     .post-content img { max-width: 100%; height: auto; border-radius: 0.5rem; }
+    .post-content ul, .post-content ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+    .post-content li { margin-bottom: 0.5rem; }
+    /* TOC Sidebar */
+    .toc-sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 2rem; align-self: flex-start; }
+    .toc-wrapper { background: rgba(128,128,128,0.1); backdrop-filter: blur(8px); padding: 1rem; border-radius: 0.5rem; }
+    .toc-title { font-size: 0.875rem; font-weight: bold; margin-bottom: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 0.375rem; }
+    .toc-item { font-size: 0.8rem; }
+    .toc-item a { color: var(--gray-500); display: block; padding: 0.25rem 0; transition: color 0.2s; }
+    .toc-item a:hover { color: var(--foreground); }
+    .toc-item.toc-h2 { padding-left: 0; }
+    .toc-item.toc-h3 { padding-left: 0.75rem; }
+    .toc-item.toc-h4 { padding-left: 1.5rem; }
+    .toc-item.toc-h5 { padding-left: 2.25rem; }
+    @media (max-width: 1024px) { .toc-sidebar { display: none; } .post-layout { max-width: 56rem; } }
   </style>
 </head>
 <body>
@@ -326,17 +361,70 @@ app.get('/:slug', async (c) => {
   const title = meta.title ?? slug.replace(/-/g, ' ');
   const dateLabel = meta.date ? meta.date.slice(0, 10) : '';
   
+  // Extract headings for TOC
+  const headingRegex = /<h([1-5])[^>]*(?:id="([^"]*)")?[^>]*>([^<]*)<\/h[1-5]>/gi;
+  const tocItems: { level: string; id: string; text: string }[] = [];
+  let match;
+  let processedHtml = postHtml;
+  let headingIndex = 0;
+  
+  while ((match = headingRegex.exec(postHtml)) !== null) {
+    const level = match[1];
+    let id = match[2];
+    const text = match[3].replace(/<[^>]*>/g, '').trim();
+    
+    if (!id && text) {
+      id = `heading-${headingIndex++}`;
+      // Add id to heading if it doesn't have one
+      const originalHeading = match[0];
+      const newHeading = originalHeading.replace(`<h${level}`, `<h${level} id="${id}"`);
+      processedHtml = processedHtml.replace(originalHeading, newHeading);
+    }
+    
+    if (text && id) {
+      tocItems.push({ level, id, text });
+    }
+  }
+  
+  const tocHtml = tocItems.length > 0 ? `
+    <aside class="toc-sidebar">
+      <div class="toc-wrapper">
+        <h3 class="toc-title">目次</h3>
+        <ul class="toc-list">
+          ${tocItems.map(item => `
+            <li class="toc-item toc-h${item.level}">
+              <a href="#${item.id}">${item.text}</a>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    </aside>
+  ` : '';
+  
   const content = `
-    <div class="post-container">
-      <article class="post-article">
-        <header class="post-header">
-          <h1 class="post-title">${title}</h1>
-          ${dateLabel ? `<time class="post-date" datetime="${dateLabel}">${dateLabel}</time>` : ''}
-        </header>
-        <div class="post-content">
-          ${postHtml}
+    <div class="back-bar">
+      <a href="/blog" class="back-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        記事一覧に戻る
+      </a>
+    </div>
+    <div class="post-layout">
+      <div class="post-main">
+        <div class="post-wrapper">
+          <article class="post-article">
+            <header class="post-header">
+              <h1 class="post-title">${title}</h1>
+              ${dateLabel ? `<time class="post-date" datetime="${dateLabel}">${dateLabel}</time>` : ''}
+            </header>
+            <div class="post-content">
+              ${processedHtml}
+            </div>
+          </article>
         </div>
-      </article>
+      </div>
+      ${tocHtml}
     </div>
   `;
   

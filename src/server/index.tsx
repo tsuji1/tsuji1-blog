@@ -37,6 +37,7 @@ const layout = (title: string, content: string) => html`
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} | tsuji1 website</title>
   <meta name="description" content="Welcome to my page!">
+  <link rel="icon" type="image/png" href="https://github.com/tsuji1.png">
   <style>
     :root {
       --background: #ffffff;

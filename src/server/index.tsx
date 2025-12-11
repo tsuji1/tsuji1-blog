@@ -159,6 +159,11 @@ const layout = (title: string, content: string) => html`
     .post-date { color: var(--gray-500); }
     .post-content { line-height: 1.8; }
     .post-content h1, .post-content h2, .post-content h3, .post-content h4, .post-content h5 { margin-top: 2rem; margin-bottom: 1rem; color: var(--foreground); }
+    .post-content h1::before { content: "# "; color: var(--gray-500); }
+    .post-content h2::before { content: "## "; color: var(--gray-500); }
+    .post-content h3::before { content: "### "; color: var(--gray-500); }
+    .post-content h4::before { content: "#### "; color: var(--gray-500); }
+    .post-content h5::before { content: "##### "; color: var(--gray-500); }
     .post-content p { margin-bottom: 1rem; }
     .post-content pre { background: var(--gray-100); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; }
     .post-content code { background: var(--gray-100); padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875em; }

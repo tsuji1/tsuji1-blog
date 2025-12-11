@@ -15,11 +15,15 @@ const app = new Hono<{ Bindings: Bindings }>();
 // API routes
 app.route('/api', api);
 
-// R2 Images
-app.get('/images/:key', async (c) => {
-  const key = c.req.param('key');
+// R2 Images (supports nested paths like /images/slug/filename.png)
+app.get('/images/*', async (c) => {
+  const key = c.req.path.replace('/images/', '');
+  console.log('R2 request key:', key);
   const object = await c.env.IMAGES_R2.get(key);
-  if (!object) return c.notFound();
+  if (!object) {
+    console.log('R2 object not found for key:', key);
+    return c.notFound();
+  }
   
   const headers = new Headers();
   object.writeHttpMetadata(headers);

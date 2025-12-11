@@ -62,7 +62,8 @@ try {
     const r2Key = `${slug}/${img}`;
     console.log(`Uploading image: ${img} -> ${R2_BUCKET}/${r2Key}`);
     try {
-      execSync(`npx wrangler r2 object put ${R2_BUCKET}/${r2Key} --file "${imgPath}"`, {
+      // --remote flag is required to upload to Cloudflare R2 (not local emulator)
+      execSync(`npx wrangler r2 object put ${R2_BUCKET}/${r2Key} --file "${imgPath}" --remote`, {
         stdio: 'inherit'
       });
       uploadedImages.push(img);

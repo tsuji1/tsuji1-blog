@@ -20,3 +20,11 @@ bucket_name = "tsuji1-blog-images"
 
 [env.preview.vars]
 JWT_ISSUER = "tsuji1-blog-preview"
+
+[[env.preview.kv_namespaces]]
+binding = "BLOG_POSTS_KV"
+id = "f62fd119b0d0440e86021aa79a4f288a"
+
+[[env.preview.r2_buckets]]
+binding = "IMAGES_R2"
+bucket_name = "tsuji1-blog-images"
